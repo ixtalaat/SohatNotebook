@@ -19,11 +19,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SohatNotebook.Authentication\SohatNotebook.Authentication.csproj" />
     <ProjectReference Include="..\SohatNotebook.DataService\SohatNotebook.DataService.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Configruation\Models\" />
   </ItemGroup>
 
 </Project>
