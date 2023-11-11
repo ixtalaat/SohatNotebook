@@ -5,12 +5,12 @@ namespace SohatNotebook.Authentication.Models.DTO.Incoming
 	public class UserRegistrationRequestDto
 	{
         [Required]
-        public required string FirstName { get; set; }
+        public string FirstName { get; set; } =  null!;
         [Required]
-        public required string LastName { get; set; }
+        public string LastName { get; set; } = null!;
 		[Required]
-		public required string Email { get; set; }
-        [Required]
-        public required string Password { get; set; }
-    }
+		public string Email { get; set; } = null!;
+		[Required]
+        public string Password { get; set; } = null!;
+	}
 }

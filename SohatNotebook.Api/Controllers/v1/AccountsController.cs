@@ -6,6 +6,8 @@ using SohatNotebook.Authentication.Configruation;
 using SohatNotebook.Authentication.Models.DTO.Incoming;
 using SohatNotebook.Authentication.Models.DTO.Outcoming;
 using SohatNotebook.DataService.IConfiguration;
+using SohatNotebook.Entities.DbSet;
+using SohatNotebook.Entities.Dtos.Incoming;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -41,7 +43,7 @@ namespace SohatNotebook.Api.Controllers.v1
 				});
 			}
             
-			var userExist = _userManager.FindByEmailAsync(registrationDto.Email);
+			var userExist = await _userManager.FindByEmailAsync(registrationDto.Email);
 			if (userExist != null)
 			{
 				return BadRequest(new UserRegistrationResponseDto
@@ -70,6 +72,30 @@ namespace SohatNotebook.Api.Controllers.v1
 					Errors = isCreated.Errors.Select(x => x.Description).ToList()
 				});
 			}
+
+			// Adding user to the database
+			var user = new User()
+			{
+				IdentityId = new Guid(newUser.Id),
+				FirstName = registrationDto.FirstName,
+				LastName = registrationDto.LastName,
+				Email = registrationDto.Email,
+				DateOfBirth = DateTime.UtcNow, //Convert.ToDateTime(userDto.DateOfBirth),
+				Phone = "",
+				Country = "",
+				Status = 1
+			};
+
+			await _unitOfWork.Users.Add(user);
+			await _unitOfWork.CompleteAsync();
+
+			var token = GenerateJwtToken(newUser);
+
+			return Ok(new UserRegistrationResponseDto
+			{
+				Success = true,
+				Token = token
+			});
 		}
 		
 		private string GenerateJwtToken(IdentityUser user)
