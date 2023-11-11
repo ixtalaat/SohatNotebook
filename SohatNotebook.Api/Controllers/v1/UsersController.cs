@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SohatNotebook.DataService.IConfiguration;
 using SohatNotebook.Entities.DbSet;
 using SohatNotebook.Entities.Dtos.Incoming;
 
 namespace SohatNotebook.Api.Controllers.v1
 {
+	[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 	public class UsersController : BaseController
 	{
 		public UsersController(IUnitOfWork unitOfWork) : base(unitOfWork)
@@ -43,9 +46,8 @@ namespace SohatNotebook.Api.Controllers.v1
 				Phone = userDto.Phone,
 				DateOfBirth = Convert.ToDateTime(userDto.DateOfBirth),
 				Country = userDto.Country,
+				Status = 1
 			};
-
-			user.Status = 1;
 
 			await _unitOfWork.Users.Add(user);
 			await _unitOfWork.CompleteAsync();
