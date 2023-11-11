@@ -43,8 +43,8 @@ namespace SohatNotebook.Api.Controllers.v1
 				});
 			}
             
-			var userExist = await _userManager.FindByEmailAsync(registrationDto.Email);
-			if (userExist != null)
+			var userExists = await _userManager.FindByEmailAsync(registrationDto.Email);
+			if (userExists != null)
 			{
 				return BadRequest(new UserRegistrationResponseDto
 				{
@@ -89,15 +89,55 @@ namespace SohatNotebook.Api.Controllers.v1
 			await _unitOfWork.Users.Add(user);
 			await _unitOfWork.CompleteAsync();
 
-			var token = GenerateJwtToken(newUser);
+			var jwtToken = GenerateJwtToken(newUser);
 
 			return Ok(new UserRegistrationResponseDto
 			{
 				Success = true,
-				Token = token
+				Token = jwtToken
 			});
 		}
-		
+
+		// Logic Action
+		[HttpPost]
+		[Route("Login")]
+		public async Task<IActionResult> Login([FromBody] UserLoginRequestDto loginDto)
+		{
+			if(!ModelState.IsValid)
+			{
+
+				return BadRequest(new UserLoginResponseDto
+				{
+					Success = false,
+					Errors = new List<string>()
+					{
+						"Invalid payload"
+					}
+				});
+			}
+
+			var userExists = await _userManager.FindByEmailAsync(loginDto.Email);
+			if (userExists == null || !await _userManager.CheckPasswordAsync(userExists, loginDto.Password))
+			{
+				return BadRequest(new UserLoginResponseDto
+				{
+					Success = false,
+					Errors = new List<string>()
+					{
+						"Invalid login attempt"
+					}
+				});
+			}
+
+			var jwtToken = GenerateJwtToken(userExists);
+
+			return Ok(new UserLoginResponseDto
+			{
+				Success = true,
+				Token = jwtToken
+			});
+		}
+
 		private string GenerateJwtToken(IdentityUser user)
 		{
 			// the handler is going to be responsible for creating the token
