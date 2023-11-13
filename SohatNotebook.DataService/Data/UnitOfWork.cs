@@ -10,12 +10,14 @@ namespace SohatNotebook.DataService.Data
 		private readonly ApplicationDbContext _context;
 		private readonly ILogger _logger;
 		public IUsersRepository Users { get; private set; }
+		public IRefreshTokenRepository RefreshTokens { get; private set; }
 
 		public UnitOfWork(ApplicationDbContext context, ILoggerFactory loggerFactory)
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
 			_logger = loggerFactory.CreateLogger("db_logs");
 			Users = new UsersRepository(context, _logger);
+			RefreshTokens = new RefreshTokenRepository(context, _logger);
 		}
 
 		public async Task CompleteAsync()
