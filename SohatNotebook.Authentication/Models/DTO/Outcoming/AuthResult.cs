@@ -2,8 +2,9 @@
 {
 	public class AuthResult
 	{
-        public string Token { get; set; } = null!;
-		public bool Success { get; set; }
-        public List<string> Errors { get; set; } = null!;
+        public string? Token { get; set; }
+        public string? RefreshToken { get; set; }
+        public bool Success { get; set; }
+        public List<string>? Errors { get; set; }
 	}
 }

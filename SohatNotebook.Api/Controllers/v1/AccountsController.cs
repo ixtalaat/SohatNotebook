@@ -7,7 +7,6 @@ using SohatNotebook.Authentication.Models.DTO.Incoming;
 using SohatNotebook.Authentication.Models.DTO.Outcoming;
 using SohatNotebook.DataService.IConfiguration;
 using SohatNotebook.Entities.DbSet;
-using SohatNotebook.Entities.Dtos.Incoming;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -155,7 +154,7 @@ namespace SohatNotebook.Api.Controllers.v1
 					new Claim(JwtRegisteredClaimNames.Email, user.Email!),
 					new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // used by the refresh token
 				}),
-				Expires = DateTime.UtcNow.AddHours(3), // Todo update the expiration time to minutes
+				Expires = DateTime.UtcNow.Add(_jwtConfig.ExpiryTimeFrame), // Todo update the expiration time to minutes
 				SigningCredentials = new SigningCredentials(
 					new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256
 				)
