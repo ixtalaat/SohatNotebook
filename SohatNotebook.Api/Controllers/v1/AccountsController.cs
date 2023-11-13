@@ -151,8 +151,8 @@ namespace SohatNotebook.Api.Controllers.v1
 				Subject = new ClaimsIdentity(new[]
 				{
 					new Claim("Id", user.Id),
-					new Claim(JwtRegisteredClaimNames.Sub, user.Email), // unique id
-					new Claim(JwtRegisteredClaimNames.Email, user.Email),
+					new Claim(JwtRegisteredClaimNames.Sub, user.Email!), // unique id
+					new Claim(JwtRegisteredClaimNames.Email, user.Email!),
 					new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()) // used by the refresh token
 				}),
 				Expires = DateTime.UtcNow.AddHours(3), // Todo update the expiration time to minutes
