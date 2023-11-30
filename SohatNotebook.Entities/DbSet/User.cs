@@ -3,11 +3,14 @@
 	public class User : BaseEntity
 	{
         public Guid IdentityId { get; set; }
-        public string FirstName { get; set; } = null!;
-		public string LastName { get; set; } = null!;
-		public string Email { get; set; } = null!;
-		public string Phone { get; set; } = null!;
+        public string FirstName { get; set; } = string.Empty;
+		public string LastName { get; set; } = string.Empty;
+		public string Email { get; set; } = string.Empty;
+		public string Phone { get; set; } = string.Empty;
 		public DateTime DateOfBirth { get; set; }
-		public string Country { get; set; } = null!;
+		public string Country { get; set; } = string.Empty;
+		public string Address { get; set; } = string.Empty;
+		public string PhoneNumber { get; set; } = string.Empty;
+		public string Gender { get; set; } = string.Empty;
 	}
 }
