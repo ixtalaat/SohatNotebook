@@ -143,7 +143,204 @@ namespace SohatNotebook.Api.Controllers.v1
 			});
 		}
 
-		private async Task<TokenData> GenerateJwtToken(IdentityUser user)
+		[HttpPost]
+		[Route("RefreshToken")]
+		public async Task<ActionResult> RefreshToken([FromBody] TokenRequestDto tokenRequestDto)
+		{
+			if(!ModelState.IsValid)
+			{
+				return BadRequest(new UserRegistrationResponseDto
+                {
+                    Success = false,
+                    Errors = new List<string>()
+                    {
+                        "Invalid payload"
+                    }
+                });
+			}
+
+			// Check if the token is valid
+			var result = await VerifyToken(tokenRequestDto);
+
+			if(result == null)
+			{
+                return BadRequest(new UserRegistrationResponseDto
+                {
+                    Success = false,
+                    Errors = new List<string>()
+                    {
+                        "Token validation failed."
+                    }
+                });
+            }
+
+			return Ok(result);
+
+		}
+
+		private async Task<AuthResult> VerifyToken(TokenRequestDto tokenRequestDto)
+		{
+			var tokenHandler = new JwtSecurityTokenHandler();
+			try
+			{
+				// We need to check the validity of the token
+				var principal = tokenHandler.ValidateToken(tokenRequestDto.Token, _tokenValidationParameters, out var validatedToken);
+				
+				// We need to validate the results that has been generated for us
+				// Validate if the string is an actual JWT token not a random string
+				if (validatedToken is JwtSecurityToken jwtSecurityToken)
+				{
+					// check if the jwt token is created with the same algorithm as our jwt token
+					var result = jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha256, StringComparison.InvariantCultureIgnoreCase);
+					if(!result)
+						return null!;
+				}
+
+				// We need to check the expiry date of the token
+				var utcExpiryDate = long.Parse(principal.Claims.FirstOrDefault(x => x.Type == JwtRegisteredClaimNames.Exp)!.Value);
+
+				// convert to date to check
+				var expDate = UnixTimeStampToDateTime(utcExpiryDate);
+				
+				// Checking if the jwt token has expired
+				if (expDate > DateTime.UtcNow)
+				{
+					return new AuthResult
+					{
+						Success = false,
+						Errors = new List<string>()
+						{
+							"Jwt token has not expired"
+						}
+					};
+				}
+
+				// Check if the refresh token exist
+				var refreshTokenExist = await _unitOfWork.RefreshTokens.GetByRefreshToken(tokenRequestDto.RefreshToken);
+				if (refreshTokenExist == null)
+				{
+                    return new AuthResult
+                    {
+                        Success = false,
+                        Errors = new List<string>()
+                        {
+                            "Invalid refresh token"
+                        }
+                    };
+                }
+
+				// Check the expiry date of a refresh token
+				if(refreshTokenExist.ExpiryDate < DateTime.UtcNow)
+				{
+                    return new AuthResult
+                    {
+                        Success = false,
+                        Errors = new List<string>()
+                        {
+                            "Refresh token has expired, please login again."
+                        }
+                    };
+                }
+
+				// Check if refresh token has been used or not
+				if(refreshTokenExist.IsUsed)
+				{
+                    return new AuthResult
+                    {
+                        Success = false,
+                        Errors = new List<string>()
+                        {
+                            "Refresh token has been used, it cannot be reused."
+                        }
+                    };
+                }
+
+                // Check if refresh token if it has been revoked
+                if (refreshTokenExist.IsRevoked)
+                {
+                    return new AuthResult
+                    {
+                        Success = false,
+                        Errors = new List<string>()
+                        {
+                            "Refresh token has been revoked, it cannot be used."
+                        }
+                    };
+                }
+
+				var jti = principal.Claims.SingleOrDefault(x => x.Type == JwtRegisteredClaimNames.Jti)!.Value;
+				if(refreshTokenExist.JwtId != jti)
+				{
+                    return new AuthResult
+                    {
+                        Success = false,
+                        Errors = new List<string>()
+                        {
+                            "Refresh token reference does not match the jwt token."
+                        }
+                    };
+                }
+
+				// Start processing and get a new token
+				refreshTokenExist.IsUsed = true;
+
+				var updateResult = await _unitOfWork.RefreshTokens.MarkRefreshTokenAsUsed(refreshTokenExist);
+				
+				if(!updateResult)
+				{
+					return new AuthResult
+					{
+						Success = false,
+						Errors = new List<string>()
+						{
+							"Error processing request"
+						}
+					};
+				}
+                
+				await _unitOfWork.CompleteAsync();
+
+				// Get the user to generate a new jwt token
+				var dbUser = await _userManager.FindByIdAsync(refreshTokenExist.UserId);
+				if(dbUser == null)
+				{
+                    return new AuthResult
+                    {
+                        Success = false,
+                        Errors = new List<string>()
+                        {
+                            "Error processing request"
+                        }
+                    };
+                }
+
+				// Generate a jwt token
+				var tokens = await GenerateJwtToken(dbUser);
+
+				return new AuthResult
+				{
+					Success = true,
+					Token = tokens.JwtToken,
+					RefreshToken = tokens.RefreshToken
+				};
+            }
+			catch (Exception)
+			{
+				// TODO: Add better error handling, and add a logger
+				return null!;
+			}
+		}
+
+		private DateTime UnixTimeStampToDateTime(long unixTime)
+		{
+			// Sets the time to 1, jan, 1970
+			var dateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+			// Add the number of seconds from 1 Jan 1970
+			dateTime = dateTime.AddSeconds(unixTime).ToUniversalTime();
+			return dateTime;
+		}
+
+        private async Task<TokenData> GenerateJwtToken(IdentityUser user)
 		{
 			// the handler is going to be responsible for creating the token
 			var jwtHandler = new JwtSecurityTokenHandler();

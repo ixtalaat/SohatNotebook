@@ -2,7 +2,7 @@
 
 namespace SohatNotebook.Authentication.Models.DTO.Incoming
 {
-	public class TokenRequest
+	public class TokenRequestDto
 	{
 		[Required]
 		public string Token { get; set; } = string.Empty;

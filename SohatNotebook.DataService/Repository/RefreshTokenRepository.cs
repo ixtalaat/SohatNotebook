@@ -27,5 +27,40 @@ namespace SohatNotebook.DataService.Repository
 				return new List<RefreshToken>();
 			}
 		}
-	}
+        public async Task<RefreshToken> GetByRefreshToken(string refreshToken)
+		{
+            try
+            {
+                return (await dbSet.Where(u => u.Token.ToLower() == refreshToken.ToLower())
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync())!;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} GetByRefreshToken method has generated an error", typeof(RefreshTokenRepository));
+                return null!;
+            }
+        }
+
+        public async Task<bool> MarkRefreshTokenAsUsed(RefreshToken refreshToken)
+		{
+            try
+            {
+                var token = await dbSet.Where(u => u.Token.ToLower() == refreshToken.Token.ToLower())
+                    .FirstOrDefaultAsync();
+
+                if (token == null) return false;
+
+                token.IsUsed = refreshToken.IsUsed;
+                return true;
+                 
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} MarkRefreshTokenAsUsed method has generated an error", typeof(RefreshTokenRepository));
+                return false;
+            }
+        }
+
+    }
 }
