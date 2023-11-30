@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SohatNotebook.Authentication.Configruation;
+using SohatNotebook.Authentication.Models.DTO.Generic;
 using SohatNotebook.Authentication.Models.DTO.Incoming;
 using SohatNotebook.Authentication.Models.DTO.Outcoming;
 using SohatNotebook.DataService.IConfiguration;
@@ -16,13 +17,16 @@ namespace SohatNotebook.Api.Controllers.v1
 	public class AccountsController : BaseController
 	{
 		private readonly UserManager<IdentityUser> _userManager;
+		private readonly TokenValidationParameters _tokenValidationParameters;
 		private readonly JwtConfig _jwtConfig;
 		public AccountsController(IUnitOfWork unitOfWork,
 			UserManager<IdentityUser> userManager,
-			IOptionsMonitor<JwtConfig> OptionMonitor) : base(unitOfWork)
+			IOptionsMonitor<JwtConfig> OptionMonitor,
+			TokenValidationParameters tokenValidationParameters) : base(unitOfWork)
 		{
 			_jwtConfig = OptionMonitor.CurrentValue;
 			_userManager = userManager;
+			_tokenValidationParameters = tokenValidationParameters;
 		}
 
 		// Register Action
@@ -88,12 +92,13 @@ namespace SohatNotebook.Api.Controllers.v1
 			await _unitOfWork.Users.Add(user);
 			await _unitOfWork.CompleteAsync();
 
-			var jwtToken = GenerateJwtToken(newUser);
+			var jwtToken = await GenerateJwtToken(newUser);
 
 			return Ok(new UserRegistrationResponseDto
 			{
 				Success = true,
-				Token = jwtToken
+				Token = jwtToken.JwtToken,
+				RefreshToken = jwtToken.RefreshToken
 			});
 		}
 
@@ -128,16 +133,17 @@ namespace SohatNotebook.Api.Controllers.v1
 				});
 			}
 
-			var jwtToken = GenerateJwtToken(userExists);
+			var jwtToken = await GenerateJwtToken(userExists);
 
 			return Ok(new UserLoginResponseDto
 			{
 				Success = true,
-				Token = jwtToken
+				Token = jwtToken.JwtToken,
+				RefreshToken = jwtToken.RefreshToken
 			});
 		}
 
-		private string GenerateJwtToken(IdentityUser user)
+		private async Task<TokenData> GenerateJwtToken(IdentityUser user)
 		{
 			// the handler is going to be responsible for creating the token
 			var jwtHandler = new JwtSecurityTokenHandler();
@@ -166,7 +172,37 @@ namespace SohatNotebook.Api.Controllers.v1
 			// Convert the security obj token into a string
 			var jwtToken = jwtHandler.WriteToken(token);
 
-			return jwtToken;
+			// Generate refresh token
+			var refreshToken = new RefreshToken
+			{
+				AddedDate = DateTime.UtcNow,
+				Token = $"{RandomStringGenerator(25)}_{Guid.NewGuid()}",
+				UserId = user.Id,
+				IsRevoked = false,
+				IsUsed = false,
+				Status = 1,
+				JwtId = token.Id,
+				ExpiryDate = DateTime.UtcNow.AddMonths(6),
+			};
+
+			await _unitOfWork.RefreshTokens.Add(refreshToken);
+			await _unitOfWork.CompleteAsync();
+
+			var tokenData = new TokenData
+			{
+				JwtToken = jwtToken,
+				RefreshToken = refreshToken.Token,
+			};
+
+			return tokenData;
+		}
+
+		private string RandomStringGenerator(int length)
+		{
+			var random = new Random();
+			const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+			return new string(Enumerable.Repeat(chars, length)
+				.Select(s => s[random.Next(s.Length)]).ToArray());
 		}
 
 	}
