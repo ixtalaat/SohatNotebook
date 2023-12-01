@@ -28,7 +28,21 @@ namespace SohatNotebook.DataService.Repository
 			}
 		}
 
-		public async Task<bool> UpdateUserProfile(User user)
+        public async Task<User> GetByIdentityId(Guid identityId)
+		{
+            try
+            {
+                return (await dbSet.Where(u => u.Status == 1 && u.IdentityId == identityId)
+                    .FirstOrDefaultAsync())!;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "{Repo} GetByIdentityId method has generated an error", typeof(UsersRepository));
+                return null!;
+            }
+        }
+
+        public async Task<bool> UpdateUserProfile(User user)
 		{
 			try
 			{
