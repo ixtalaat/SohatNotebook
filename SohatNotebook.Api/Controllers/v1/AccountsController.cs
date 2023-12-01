@@ -16,16 +16,14 @@ namespace SohatNotebook.Api.Controllers.v1
 {
     public class AccountsController : BaseController
     {
-        private readonly UserManager<IdentityUser> _userManager;
         private readonly TokenValidationParameters _tokenValidationParameters;
         private readonly JwtConfig _jwtConfig;
         public AccountsController(IUnitOfWork unitOfWork,
             UserManager<IdentityUser> userManager,
             IOptionsMonitor<JwtConfig> OptionMonitor,
-            TokenValidationParameters tokenValidationParameters) : base(unitOfWork)
+            TokenValidationParameters tokenValidationParameters) : base(unitOfWork, userManager)
         {
             _jwtConfig = OptionMonitor.CurrentValue;
-            _userManager = userManager;
             _tokenValidationParameters = tokenValidationParameters;
         }
 
