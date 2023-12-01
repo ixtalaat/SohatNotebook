@@ -5,7 +5,7 @@
 namespace SohatNotebook.DataService.Migrations
 {
     /// <inheritdoc />
-    public partial class UpdateUserTable : Migration
+    public partial class UpdateUserInfo : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -25,7 +25,7 @@ namespace SohatNotebook.DataService.Migrations
                 defaultValue: "");
 
             migrationBuilder.AddColumn<string>(
-                name: "PhoneNumber",
+                name: "MobileNumber",
                 table: "Users",
                 type: "TEXT",
                 nullable: false,
@@ -44,7 +44,7 @@ namespace SohatNotebook.DataService.Migrations
                 table: "Users");
 
             migrationBuilder.DropColumn(
-                name: "PhoneNumber",
+                name: "MobileNumber",
                 table: "Users");
         }
     }

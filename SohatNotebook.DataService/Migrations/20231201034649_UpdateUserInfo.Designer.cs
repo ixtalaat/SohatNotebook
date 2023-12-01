@@ -11,8 +11,8 @@ using SohatNotebook.DataService.Data;
 namespace SohatNotebook.DataService.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20231130141157_UpdateUserTable")]
-    partial class UpdateUserTable
+    [Migration("20231201034649_UpdateUserInfo")]
+    partial class UpdateUserInfo
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -298,11 +298,11 @@ namespace SohatNotebook.DataService.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Phone")
+                    b.Property<string>("MobileNumber")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("PhoneNumber")
+                    b.Property<string>("Phone")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
