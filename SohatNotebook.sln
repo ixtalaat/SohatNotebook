@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SohatNotebook.Entities", "S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SohatNotebook.DataService", "SohatNotebook.DataService\SohatNotebook.DataService.csproj", "{65A8171A-CDE4-4EF8-9842-C497356D125F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SohatNotebook.Authentication", "SohatNotebook.Authentication\SohatNotebook.Authentication.csproj", "{5E3673D1-367E-472B-9CE4-5546A0A5D798}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SohatNotebook.Authentication", "SohatNotebook.Authentication\SohatNotebook.Authentication.csproj", "{5E3673D1-367E-472B-9CE4-5546A0A5D798}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SohatNotebook.Configuration", "SohatNotebook.Configuration\SohatNotebook.Configuration.csproj", "{C6289D49-A356-43DF-AACE-E8BD9745DC0A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{5E3673D1-367E-472B-9CE4-5546A0A5D798}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5E3673D1-367E-472B-9CE4-5546A0A5D798}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5E3673D1-367E-472B-9CE4-5546A0A5D798}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C6289D49-A356-43DF-AACE-E8BD9745DC0A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6289D49-A356-43DF-AACE-E8BD9745DC0A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6289D49-A356-43DF-AACE-E8BD9745DC0A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6289D49-A356-43DF-AACE-E8BD9745DC0A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

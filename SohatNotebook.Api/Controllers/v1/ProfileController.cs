@@ -2,7 +2,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using SohatNotebook.Configuration.Messages;
 using SohatNotebook.DataService.IConfiguration;
+using SohatNotebook.Entities.DbSet;
+using SohatNotebook.Entities.Dtos.Generic;
 using SohatNotebook.Entities.Dtos.Incoming.Profile;
 
 namespace SohatNotebook.Api.Controllers.v1;
@@ -19,9 +22,16 @@ public class ProfileController : BaseController
     public async Task<IActionResult> GetProfile()
     {
         var loggedInUser = await _userManager.GetUserAsync(HttpContext.User);
+
+        var result = new Result<User>();
+
         if (loggedInUser == null)
         {
-            return BadRequest("User not found.");
+            result.Error = PopulateError(400,
+                ErrorMessages.Profile.UserNotFound,
+                ErrorMessages.Generic.TypeBadRequest);
+
+            return BadRequest(result);
         }
 
         var identityId = new Guid(loggedInUser.Id);
@@ -29,25 +39,38 @@ public class ProfileController : BaseController
         var profile = await _unitOfWork.Users.GetByIdentityId(identityId);
         if (profile == null)
         {
-            return BadRequest("User not found.");
+            result.Error = PopulateError(400,
+                 ErrorMessages.Profile.UserNotFound,
+                 ErrorMessages.Generic.TypeBadRequest);
+
+            return BadRequest(result);
         }
 
-        return Ok(profile);
+        result.Content = profile;
+        return Ok(result);
     }
 
     [HttpPut]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto profileDto)
     {
+        var result = new Result<User>();
 
         if (!ModelState.IsValid)
         {
-            return BadRequest("Invalid payload");
+            result.Error = PopulateError(400,
+                ErrorMessages.Generic.InvalidPayload,
+                ErrorMessages.Generic.TypeBadRequest);
+            return BadRequest(result);
         }
 
         var loggedInUser = await _userManager.GetUserAsync(HttpContext.User);
         if (loggedInUser == null)
         {
-            return BadRequest("User not found.");
+            result.Error = PopulateError(400,
+                ErrorMessages.Profile.UserNotFound,
+                ErrorMessages.Generic.TypeBadRequest);
+
+            return BadRequest(result);
         }
 
         var identityId = new Guid(loggedInUser.Id);
@@ -55,7 +78,11 @@ public class ProfileController : BaseController
         var userProfile = await _unitOfWork.Users.GetByIdentityId(identityId);
         if (userProfile == null)
         {
-            return BadRequest("User not found.");
+            result.Error = PopulateError(400,
+                ErrorMessages.Profile.UserNotFound,
+                ErrorMessages.Generic.TypeBadRequest);
+
+            return BadRequest(result);
         }
 
         userProfile.Country = profileDto.Country;
@@ -68,11 +95,16 @@ public class ProfileController : BaseController
 
         if (!isUpdated)
         {
-            return BadRequest("Something went wrong, please try again later");
+            result.Error = PopulateError(500,
+                ErrorMessages.Generic.SomethingWentWrong,
+                ErrorMessages.Generic.UnableToProcess);
+
+            return BadRequest(result);
         }
 
         await _unitOfWork.CompleteAsync();
-        return Ok(userProfile);
+        result.Content = userProfile;
+        return Ok(result);
     }
 
 }

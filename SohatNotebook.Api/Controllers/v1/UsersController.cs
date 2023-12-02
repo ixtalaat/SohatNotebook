@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using SohatNotebook.Configuration.Messages;
 using SohatNotebook.DataService.IConfiguration;
 using SohatNotebook.Entities.DbSet;
+using SohatNotebook.Entities.Dtos.Generic;
 using SohatNotebook.Entities.Dtos.Incoming;
 
 namespace SohatNotebook.Api.Controllers.v1;
@@ -20,7 +22,11 @@ public class UsersController : BaseController
     public async Task<IActionResult> GetUsers()
     {
         var users = await _unitOfWork.Users.All();
-        return Ok(users);
+
+        var result = new PagedResult<User>();
+        result.Content = users.ToList();
+        result.ResultCount = users.Count();
+        return Ok(result);
     }
 
     [HttpGet("{id:guid}", Name = "GetUser")]
@@ -28,17 +34,31 @@ public class UsersController : BaseController
     {
         var user = await _unitOfWork.Users.GetById(id);
 
+        var result = new Result<User>();
         if (user is null)
-            return NotFound();
+        {
+            result.Error = PopulateError(404,
+                 ErrorMessages.Users.UserNotFound,
+                 ErrorMessages.Generic.TypeNotFound);
 
+            return NotFound(result);
+        }
+
+        result.Content = user;
         return Ok(user);
     }
 
     [HttpPost]
     public async Task<IActionResult> AddUser([FromBody] UserDto userDto)
     {
+        var result = new Result<User>();
         if (!ModelState.IsValid)
-            return BadRequest();
+        {
+            result.Error = PopulateError(400,
+                ErrorMessages.Generic.InvalidPayload,
+                ErrorMessages.Generic.TypeBadRequest);
+            return BadRequest(result);
+        }
 
         var user = new User()
         {
