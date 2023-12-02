@@ -1,9 +1,8 @@
-﻿namespace SohatNotebook.Authentication.Configruation
+﻿namespace SohatNotebook.Authentication.Configruation;
+public class JwtConfig
 {
-	public class JwtConfig
-	{
-        public string Secret { get; set; } = string.Empty;
-        public TimeSpan ExpiryTimeFrame { get; set; }
+    public string Secret { get; set; } = string.Empty;
+    public TimeSpan ExpiryTimeFrame { get; set; }
 
-	}
 }
+

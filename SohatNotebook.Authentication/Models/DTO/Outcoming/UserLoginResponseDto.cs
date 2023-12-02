@@ -1,6 +1,5 @@
-﻿namespace SohatNotebook.Authentication.Models.DTO.Outcoming
+﻿namespace SohatNotebook.Authentication.Models.DTO.Outcoming;
+
+public class UserLoginResponseDto : AuthResult
 {
-	public class UserLoginResponseDto : AuthResult
-	{
-	}
 }

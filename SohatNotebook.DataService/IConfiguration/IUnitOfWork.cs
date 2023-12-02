@@ -1,11 +1,9 @@
 ﻿using SohatNotebook.DataService.IRepository;
 
-namespace SohatNotebook.DataService.IConfiguration
+namespace SohatNotebook.DataService.IConfiguration;
+public interface IUnitOfWork
 {
-	public interface IUnitOfWork
-	{
-		IUsersRepository Users { get; }
-		IRefreshTokenRepository RefreshTokens { get; }
-		Task CompleteAsync();
-	}
+	IUsersRepository Users { get; }
+	IRefreshTokenRepository RefreshTokens { get; }
+	Task CompleteAsync();
 }

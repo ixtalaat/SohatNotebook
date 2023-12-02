@@ -1,12 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SohatNotebook.Authentication.Models.DTO.Incoming
+namespace SohatNotebook.Authentication.Models.DTO.Incoming;
+public class UserLoginRequestDto
 {
-	public class UserLoginRequestDto
-	{
-        [Required]
-        public string Email { get; set; } = string.Empty;
-        [Required]
-        public string Password { get; set; } = string.Empty;
-    }
+    [Required]
+    public string Email { get; set; } = string.Empty;
+    [Required]
+    public string Password { get; set; } = string.Empty;
 }
