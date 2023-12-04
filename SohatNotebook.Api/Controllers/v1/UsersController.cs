@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -7,14 +8,16 @@ using SohatNotebook.DataService.IConfiguration;
 using SohatNotebook.Entities.DbSet;
 using SohatNotebook.Entities.Dtos.Generic;
 using SohatNotebook.Entities.Dtos.Incoming;
+using SohatNotebook.Entities.Dtos.Outgoing.Profile;
+using static SohatNotebook.Configuration.Messages.ErrorMessages;
 
 namespace SohatNotebook.Api.Controllers.v1;
 
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 public class UsersController : BaseController
 {
-    public UsersController(IUnitOfWork unitOfWork, UserManager<IdentityUser> userManager)
-        : base(unitOfWork, userManager)
+    public UsersController(IUnitOfWork unitOfWork, UserManager<IdentityUser> userManager, IMapper mapper)
+        : base(unitOfWork, userManager, mapper)
     {
     }
 
@@ -34,7 +37,7 @@ public class UsersController : BaseController
     {
         var user = await _unitOfWork.Users.GetById(id);
 
-        var result = new Result<User>();
+        var result = new Result<ProfileDto>();
         if (user is null)
         {
             result.Error = PopulateError(404,
@@ -43,15 +46,15 @@ public class UsersController : BaseController
 
             return NotFound(result);
         }
-
-        result.Content = user;
-        return Ok(user);
+        var mappedProfile = _mapper.Map<ProfileDto>(user);
+        result.Content = mappedProfile;
+        return Ok(result);
     }
 
     [HttpPost]
     public async Task<IActionResult> AddUser([FromBody] UserDto userDto)
     {
-        var result = new Result<User>();
+        var result = new Result<UserDto>();
         if (!ModelState.IsValid)
         {
             result.Error = PopulateError(400,
@@ -60,21 +63,14 @@ public class UsersController : BaseController
             return BadRequest(result);
         }
 
-        var user = new User()
-        {
-            FirstName = userDto.FirstName,
-            LastName = userDto.LastName,
-            Email = userDto.Email,
-            Phone = userDto.Phone,
-            DateOfBirth = Convert.ToDateTime(userDto.DateOfBirth),
-            Country = userDto.Country,
-            Status = 1
-        };
+        var mappedUser = _mapper.Map<User>(userDto);
 
-        await _unitOfWork.Users.Add(user);
+        await _unitOfWork.Users.Add(mappedUser);
         await _unitOfWork.CompleteAsync();
 
-        return CreatedAtRoute(nameof(GetUser), new { id = user.Id }, user); // return a 201
+        result.Content = userDto;
+
+        return CreatedAtRoute(nameof(GetUser), new { id = mappedUser.Id }, result); // return a 201
     }
 }
 

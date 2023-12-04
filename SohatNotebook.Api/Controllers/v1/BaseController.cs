@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SohatNotebook.DataService.IConfiguration;
 using SohatNotebook.Entities.Dtos.Errors;
@@ -12,10 +13,12 @@ public class BaseController : ControllerBase
 {
     public IUnitOfWork _unitOfWork;
     public UserManager<IdentityUser> _userManager;
-    public BaseController(IUnitOfWork unitOfWork, UserManager<IdentityUser> userManager)
+    public readonly IMapper _mapper;
+    public BaseController(IUnitOfWork unitOfWork, UserManager<IdentityUser> userManager, IMapper mapper)
     {
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         _userManager = userManager ?? throw new ArgumentNullException(nameof(userManager));
+        _mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
     }
 
     internal Error PopulateError(int code, string message, string type)

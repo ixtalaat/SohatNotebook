@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -20,7 +21,8 @@ public class AccountsController : BaseController
     public AccountsController(IUnitOfWork unitOfWork,
         UserManager<IdentityUser> userManager,
         IOptionsMonitor<JwtConfig> OptionMonitor,
-        TokenValidationParameters tokenValidationParameters) : base(unitOfWork, userManager)
+        TokenValidationParameters tokenValidationParameters,
+        IMapper mapper) : base(unitOfWork, userManager, mapper)
     {
         _jwtConfig = OptionMonitor.CurrentValue;
         _tokenValidationParameters = tokenValidationParameters;

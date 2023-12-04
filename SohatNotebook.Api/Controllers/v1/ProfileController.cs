@@ -1,20 +1,23 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using SohatNotebook.Api.Profiles;
 using SohatNotebook.Configuration.Messages;
 using SohatNotebook.DataService.IConfiguration;
 using SohatNotebook.Entities.DbSet;
 using SohatNotebook.Entities.Dtos.Generic;
 using SohatNotebook.Entities.Dtos.Incoming.Profile;
+using SohatNotebook.Entities.Dtos.Outgoing.Profile;
 
 namespace SohatNotebook.Api.Controllers.v1;
 
 [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 public class ProfileController : BaseController
 {
-    public ProfileController(IUnitOfWork unitOfWork, UserManager<IdentityUser> userManager)
-        : base(unitOfWork, userManager)
+    public ProfileController(IUnitOfWork unitOfWork, UserManager<IdentityUser> userManager, IMapper mapper)
+        : base(unitOfWork, userManager, mapper)
     {
     }
 
@@ -23,7 +26,7 @@ public class ProfileController : BaseController
     {
         var loggedInUser = await _userManager.GetUserAsync(HttpContext.User);
 
-        var result = new Result<User>();
+        var result = new Result<ProfileDto>();
 
         if (loggedInUser == null)
         {
@@ -46,14 +49,17 @@ public class ProfileController : BaseController
             return BadRequest(result);
         }
 
-        result.Content = profile;
+        var mappedProfile = _mapper.Map<ProfileDto>(profile);
+
+
+        result.Content = mappedProfile;
         return Ok(result);
     }
 
     [HttpPut]
     public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileDto profileDto)
     {
-        var result = new Result<User>();
+        var result = new Result<ProfileDto>();
 
         if (!ModelState.IsValid)
         {
@@ -103,7 +109,10 @@ public class ProfileController : BaseController
         }
 
         await _unitOfWork.CompleteAsync();
-        result.Content = userProfile;
+
+        var mappedProfile = _mapper.Map<ProfileDto>(userProfile);
+
+        result.Content = mappedProfile;
         return Ok(result);
     }
 
